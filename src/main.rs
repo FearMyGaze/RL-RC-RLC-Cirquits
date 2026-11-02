@@ -9,8 +9,6 @@ const SCOPE_TIME_WINDOW: f32 = 0.05;
 const SCOPE_SAMPLES: usize = 360;
 const SCOPE_MAX_AMPLITUDE: f32 = 44.0;
 const SCOPE_CENTER_Y: f32 = 102.0;
-const SCOPE_VOLTAGE_RANGE: f32 = 600.0;
-const SCOPE_CURRENT_RANGE: f32 = 15.0;
 
 #[derive(Clone)]
 struct State {
@@ -106,14 +104,6 @@ fn nice_scale(peak: f32) -> f32 {
     step * magnitude
 }
 
-fn channel_scale(peak: f32, base_range: f32) -> f32 {
-    if peak <= base_range {
-        base_range
-    } else {
-        nice_scale(peak)
-    }
-}
-
 fn format_scale(value: f32) -> String {
     if value >= 100.0 {
         format!("{:.0}", value)
@@ -138,7 +128,7 @@ fn waveform(phase: f32, cycles: f32, amplitude: f32, center_y: f32) -> Vec<WaveS
         let dy = y1 - y0;
         segments.push(WaveSegment {
             x: x0,
-            y: y0 - 1.0,
+            y: y0 - 1.5,
             length: (dx * dx + dy * dy).sqrt(),
             rotation: dy.atan2(dx).to_degrees(),
         });
@@ -180,12 +170,12 @@ fn conclusions_for_mode(mode: i32) -> [Conclusion; 3] {
             Conclusion {
                 title: "Κάτω από τον συντονισμό",
                 text: "Για f < f₀ επικρατεί η χωρητική συμπεριφορά· το ρεύμα προηγείται της τάσης.",
-                formula: "f < f₀ ⇒ XC > XL ⇒ φ < 0",
+                formula: "f < f₀ → XC > XL → φ < 0",
             },
             Conclusion {
                 title: "Πάνω από τον συντονισμό",
                 text: "Για f > f₀ επικρατεί η επαγωγική συμπεριφορά· το ρεύμα καθυστερεί της τάσης.",
-                formula: "f > f₀ ⇒ XL > XC ⇒ φ > 0",
+                formula: "f > f₀ → XL > XC → φ > 0",
             },
         ],
         _ => [
@@ -324,12 +314,11 @@ fn apply(ui: &MainWindow, s: &State) {
     ui.set_angle_bubble_y(bubble_y);
     ui.set_angle_badge(format!("{:.0}°", p.phi_deg.abs()).into());
 
-    // The scope has two physically calibrated channels: each trace amplitude is derived
-    // from the real peak value and the selected vertical range for that channel.
+    // Auto-scale each channel to the nearest nice value so the traces fill the grid.
     let voltage_peak = s.voltage * 2.0_f32.sqrt();
     let current_peak = p.current * 2.0_f32.sqrt();
-    let voltage_scale = channel_scale(voltage_peak, SCOPE_VOLTAGE_RANGE);
-    let current_scale = channel_scale(current_peak, SCOPE_CURRENT_RANGE);
+    let voltage_scale = nice_scale(voltage_peak);
+    let current_scale = nice_scale(current_peak);
     let voltage_amplitude = SCOPE_MAX_AMPLITUDE * voltage_peak / voltage_scale;
     let current_amplitude = SCOPE_MAX_AMPLITUDE * current_peak / current_scale;
     ui.set_scope_voltage_scale(
@@ -364,6 +353,35 @@ fn apply(ui: &MainWindow, s: &State) {
     // phase displacement follow the selected frequency and calculated phase angle.
     let cycles_in_window = s.frequency * SCOPE_TIME_WINDOW;
     let electrical_phase = 2.0 * PI * (s.time * s.frequency).fract();
+
+    // Place the orange Δt marker between corresponding zero crossings of v(t) and i(t).
+    let dt_shift = p.phi_rad / (2.0 * PI * cycles_in_window);
+    let z = electrical_phase / PI;
+    let n0 = (z + cycles_in_window).floor() as i32;
+    let mut best: Option<(f32, f32)> = None;
+    let mut best_distance = f32::MAX;
+    for n in (n0 - 2)..=(n0 + 2) {
+        let u_voltage = (n as f32 - z) / (2.0 * cycles_in_window);
+        let u_current = u_voltage + dt_shift;
+        if (0.0..=1.0).contains(&u_voltage) && (0.0..=1.0).contains(&u_current) {
+            let distance = (u_voltage - 0.5).abs() + (u_current - 0.5).abs();
+            if distance < best_distance {
+                best_distance = distance;
+                best = Some((u_voltage, u_current));
+            }
+        }
+    }
+    if let Some((u_voltage, u_current)) = best {
+        let x1 = SCOPE_X_START + SCOPE_X_SPAN * u_voltage;
+        let x2 = SCOPE_X_START + SCOPE_X_SPAN * u_current;
+        ui.set_scope_dt_x1(x1.min(x2));
+        ui.set_scope_dt_x2(x1.max(x2));
+        ui.set_scope_dt_visible((x2 - x1).abs() > 1.0);
+    } else {
+        ui.set_scope_dt_visible(false);
+    }
+    ui.set_scope_dt_text(format!("Χρονική διαφορά Δt = {:.2} ms", p.dt_ms.abs()).into());
+
     let voltage_segments = Rc::new(VecModel::from(waveform(
         electrical_phase,
         cycles_in_window,

@@ -1,3 +1,6 @@
 fn main() {
-    slint_build::compile("ui/app-window.slint").expect("Slint UI compilation failed");
+    let config = slint_build::CompilerConfiguration::new()
+        .embed_resources(slint_build::EmbedResourcesKind::EmbedFiles);
+    slint_build::compile_with_config("ui/app-window.slint", config)
+        .expect("Slint UI compilation failed");
 }

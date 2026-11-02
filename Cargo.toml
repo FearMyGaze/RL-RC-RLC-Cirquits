@@ -1,5 +1,5 @@
 [package]
-name = "RL, RC and RLC circuit demonstration"
+name = "RL_RC_RLC_circuit_demonstration"
 version = "0.1.0"
 edition = "2021"
 description = "Interactive RC, RL and RLC educational circuit laboratory built with Rust and Slint"

@@ -3,7 +3,7 @@
 version = 4
 
 [[package]]
-name = "R"
+name = "RL_RC_RLC_circuit_demonstration"
 version = "0.1.0"
 dependencies = [
  "slint",
