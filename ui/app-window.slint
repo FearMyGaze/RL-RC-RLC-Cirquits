@@ -1,0 +1,1351 @@
+import { Slider } from "std-widgets.slint";
+
+export struct WaveSegment { x: float, y: float, length: float, rotation: float }
+
+component ModeButton inherits Rectangle {
+    in property <string> label;
+    in property <int> mode;
+    in property <int> active-mode;
+    callback pressed(int);
+    width: 92px;
+    height: 38px;
+    border-radius: 8px;
+    background: root.active-mode == root.mode ? #4f46e5 : #1e293b;
+    border-width: 1px;
+    border-color: root.active-mode == root.mode ? #818cf8 : #334155;
+    Text {
+        text: root.label;
+        color: root.active-mode == root.mode ? #ffffff : #cbd5e1;
+        font-size: 12px;
+        font-weight: 700;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    TouchArea {
+        clicked => { root.pressed(root.mode); }
+    }
+}
+
+component ActionButton inherits Rectangle {
+    in property <string> label;
+    in property <bool> primary: false;
+    callback pressed();
+    height: 38px;
+    border-radius: 8px;
+    background: root.primary ? #4f46e5 : #334155;
+    border-width: 1px;
+    border-color: root.primary ? #6366f1 : #475569;
+    Text {
+        text: root.label;
+        color: #f8fafc;
+        font-size: 12px;
+        font-weight: 700;
+        horizontal-alignment: center;
+        vertical-alignment: center;
+    }
+
+    TouchArea {
+        clicked => { root.pressed(); }
+    }
+}
+
+component CalcCard inherits Rectangle {
+    in property <string> title;
+    in property <string> value;
+    in property <brush> accent: #e2e8f0;
+    in property <length> value-size: 14px;
+    height: 60px;
+    horizontal-stretch: 1;
+    background: #17263a;
+    border-radius: 9px;
+    border-color: #2b4059;
+    border-width: 1px;
+    Text {
+        x: 10px;
+        y: 9px;
+        text: root.title;
+        color: #94a3b8;
+        font-size: 10px;
+    }
+
+    Text {
+        x: 10px;
+        y: 34px;
+        text: root.value;
+        color: root.accent;
+        font-size: root.value-size;
+        font-weight: 800;
+    }
+}
+
+component ConclusionCard inherits Rectangle {
+    in property <string> index-text;
+    in property <string> title;
+    in property <string> text;
+    in property <string> formula;
+    in property <brush> accent: #38bdf8;
+    height: 74px;
+    horizontal-stretch: 1;
+    background: #17263a;
+    border-radius: 9px;
+    border-color: #2b4059;
+    border-width: 1px;
+
+    Text {
+        x: 10px;
+        y: 9px;
+        width: parent.width - 20px;
+        text: root.index-text + ". " + root.title;
+        color: #94a3b8;
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+    Text {
+        x: 10px;
+        y: 26px;
+        width: parent.width - 20px;
+        text: root.text;
+        color: #cbd5e1;
+        font-size: 9px;
+        wrap: word-wrap;
+    }
+
+    Text {
+        x: 10px;
+        y: 54px;
+        width: parent.width - 20px;
+        text: root.formula;
+        color: root.accent;
+        font-size: 10px;
+        font-weight: 700;
+    }
+}
+
+component CircuitPart inherits Rectangle {
+    in property <string> label;
+    in property <string> value-text;
+    in property <brush> accent: #34d399;
+    height: 50px;
+    background: transparent;
+    Text {
+        x: 0px;
+        y: 0px;
+        width: parent.width;
+        text: root.value-text;
+        color: root.accent;
+        font-size: 10px;
+        font-weight: 700;
+        horizontal-alignment: center;
+    }
+
+    Rectangle {
+        x: 0px;
+        y: 24px;
+        width: parent.width;
+        height: 26px;
+        background: #1b2a3e;
+        border-color: root.accent;
+        border-width: 2px;
+        border-radius: 4px;
+        Text {
+            text: root.label;
+            color: root.accent;
+            font-size: 13px;
+            font-weight: 800;
+            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+    }
+}
+
+component ParameterControl inherits Rectangle {
+    in property <string> label;
+    in property <string> value-text;
+    in property <float> minimum;
+    in property <float> maximum;
+    in-out property <float> value;
+    in property <brush> accent: #38bdf8;
+    callback changed(float);
+    height: 76px;
+    background: transparent;
+    Text {
+        x: 2px;
+        y: 2px;
+        text: root.label;
+        color: #cbd5e1;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    Text {
+        x: parent.width - 105px;
+        y: 2px;
+        width: 100px;
+        text: root.value-text;
+        color: root.accent;
+        font-size: 13px;
+        font-weight: 700;
+        horizontal-alignment: right;
+    }
+
+    Slider {
+        x: 0px;
+        y: 30px;
+        width: parent.width;
+        height: 30px;
+        minimum: root.minimum;
+        maximum: root.maximum;
+        value <=> root.value;
+        changed(v) => { root.changed(v); }
+    }
+}
+
+component TriangleCard inherits Rectangle {
+    in property <string> title;
+    in property <string> base-text;
+    in property <string> side-text;
+    in property <string> hyp-text;
+    in property <float> base-len: 90;
+    in property <float> height-len: 40;
+    in property <float> sign: 1;
+    in property <float> diag-angle: -20;
+    width: 184px;
+    height: 226px;
+    background: #111c2e;
+    border-color: #26364d;
+    border-width: 1px;
+    border-radius: 10px;
+    Text {
+        x: 8px;
+        y: 8px;
+        width: parent.width - 16px;
+        text: root.title;
+        color: #e2e8f0;
+        font-size: 12px;
+        font-weight: 700;
+        horizontal-alignment: center;
+    }
+    // Horizontal (resistive) component.
+    Rectangle {
+        x: 18px;
+        y: 163px;
+        width: root.base-len * 1px;
+        height: 3px;
+        background: #34d399;
+    }
+    // Reactive component. Positive = inductive/up; negative = capacitive/down.
+    Rectangle {
+        x: 18px + root.base-len * 1px - 1.5px;
+        y: root.sign >= 0 ? 163px - root.height-len * 1px : 163px;
+        width: 3px;
+        height: root.height-len * 1px;
+        background: #f59e0b;
+    }
+    // Resultant / hypotenuse.
+    Rectangle {
+        x: 18px;
+        y: 163px;
+        width: Math.sqrt(root.base-len * root.base-len + root.height-len * root.height-len) * 1px;
+        height: 3px;
+        background: #38bdf8;
+        transform-origin: { x: 0px, y: 1.5px };
+        transform-rotation: root.diag-angle * 1deg;
+    }
+
+    Text {
+        x: 10px;
+        y: 174px;
+        width: parent.width - 20px;
+        text: root.base-text;
+        color: #34d399;
+        font-size: 10px;
+        horizontal-alignment: center;
+    }
+
+    Text {
+        x: 10px;
+        y: 38px;
+        width: parent.width - 20px;
+        text: root.side-text;
+        color: #fbbf24;
+        font-size: 10px;
+        horizontal-alignment: center;
+    }
+
+    Text {
+        x: 10px;
+        y: 194px;
+        width: parent.width - 20px;
+        text: root.hyp-text;
+        color: #7dd3fc;
+        font-size: 10px;
+        horizontal-alignment: center;
+    }
+
+    Text {
+        x: 10px;
+        y: 58px;
+        width: parent.width - 20px;
+        text: root.sign < 0 ? "Χωρητική φορά (−)" : root.sign > 0 ? "Επαγωγική φορά (+)" : "Σε συντονισμό";
+        color: #64748b;
+        font-size: 9px;
+        horizontal-alignment: center;
+    }
+}
+
+export component MainWindow inherits Window {
+    title: "Εργαστήριο Κυκλωμάτων RC, RL & RLC";
+    width: 1510px;
+    height: 1000px;
+    background: #0b1220;
+
+    in-out property <int> circuit_mode: 1;
+    in-out property <float> l_value: 100;
+    in-out property <float> c_value: 100;
+    in-out property <float> r_value: 31.4;
+    in-out property <float> frequency_value: 50;
+    in-out property <float> voltage_value: 230;
+    in-out property <float> speed_value: 0.2;
+    in-out property <string> l_text: "100 mH";
+    in-out property <string> c_text: "100 μF";
+    in-out property <string> r_text: "31.4 Ω";
+    in-out property <string> frequency_text: "50 Hz";
+    in-out property <string> voltage_text: "230 V";
+    in-out property <string> speed_text: "0.20x";
+    in-out property <string> play_text: "Παύση";
+    in-out property <string> mode_title: "Κύκλωμα σειράς RL";
+    in-out property <string> mode_hint: "Το ρεύμα καθυστερεί ως προς την τάση";
+    in-out property <string> phase_legend: "ΚΑΘΥΣΤΕΡΗΣΗ · φ = 45°";
+    in-out property <string> calc_xl: "XL = 31.42 Ω";
+    in-out property <string> calc_xc: "XC = 31.83 Ω";
+    in-out property <string> calc_xnet: "XL = 31.42 Ω";
+    in-out property <string> calc_z: "Z = 44.43 Ω";
+    in-out property <string> calc_i: "Irms = 5.18 A";
+    in-out property <string> calc_phi: "φ = 45.0°";
+    in-out property <string> calc_phi_state: "ΚΑΘΥΣΤΕΡΗΣΗ";
+    in-out property <string> calc_dt: "Δt = 2.50 ms";
+    in-out property <string> calc_resonance: "f₀ = 1.59 kHz";
+    in-out property <string> calc_vr: "VR = 162 V";
+    in-out property <string> calc_vx: "VL = 162 V";
+    in-out property <string> calc_v: "V = 230 V";
+    in-out property <string> calc_r: "R = 31.4 Ω";
+    in-out property <string> calc_x: "XL = 31.42 Ω";
+    in-out property <string> calc_z_triangle: "Z = 44.43 Ω";
+    in-out property <string> conclusion_title: "ΒΑΣΙΚΑ ΣΥΜΠΕΡΑΣΜΑΤΑ · RL";
+    in-out property <string> conclusion_1_title: "Φάση ρεύματος";
+    in-out property <string> conclusion_1: "Το ρεύμα καθυστερεί της τάσης κατά φ (επαγωγική συμπεριφορά).";
+    in-out property <string> conclusion_1_formula: "φ = +arctan(XL / R)";
+    in-out property <string> conclusion_2_title: "Επίδραση f και L";
+    in-out property <string> conclusion_2: "Αύξηση της f ή της L αυξάνει το XL, άρα μειώνει το ρεύμα και αυξάνει το |φ|.";
+    in-out property <string> conclusion_2_formula: "XL = 2π·f·L";
+    in-out property <string> conclusion_3_title: "Τάσεις στοιχείων";
+    in-out property <string> conclusion_3: "Η τάση VR είναι σε φάση με το ρεύμα, ενώ η VL προηγείται κατά 90°.";
+    in-out property <string> conclusion_3_formula: "VR = I·R   VL = I·XL";
+    in-out property <float> triangle_base: 84;
+    in-out property <float> triangle_height: 84;
+    in-out property <float> triangle_angle: -45;
+    in-out property <float> triangle_sign: 1;
+    in-out property <string> voltage_triangle_base: "VR 162 V";
+    in-out property <string> voltage_triangle_side: "VL 162 V";
+    in-out property <string> voltage_triangle_hyp: "V 230 V";
+    in-out property <string> impedance_triangle_base: "R 31 Ω";
+    in-out property <string> impedance_triangle_side: "XL 31 Ω";
+    in-out property <string> impedance_triangle_hyp: "Z 44 Ω";
+    in-out property <float> voltage_vector_angle: 0;
+    in-out property <float> current_vector_angle: 45;
+    in-out property <float> voltage_tip_x: 303;
+    in-out property <float> voltage_tip_y: 153;
+    in-out property <float> current_tip_x: 281;
+    in-out property <float> current_tip_y: 153;
+    in-out property <float> angle_bubble_x: 200;
+    in-out property <float> angle_bubble_y: 105;
+    in-out property <string> angle_badge: "45°";
+    in-out property <[WaveSegment]> voltage_wave: [];
+    in-out property <[WaveSegment]> current_wave: [];
+    in-out property <string> scope_voltage_scale: "Vp = 325.27 V  ·  Vrms = 230.00 V  ·  κλίμακα ±600 V";
+    in-out property <string> scope_current_scale: "Ip = 7.32 A  ·  Irms = 5.18 A  ·  κλίμακα ±15.0 A";
+    in-out property <string> scope_time_base: "Βάση χρόνου: 5.0 ms/div  ·  παράθυρο 50 ms";
+    in-out property <float> animation_time: 0;
+    callback mode_selected(int);
+    callback l_changed(float);
+    callback c_changed(float);
+    callback r_changed(float);
+    callback frequency_changed(float);
+    callback voltage_changed(float);
+    callback speed_changed(float);
+    callback play_clicked();
+    callback reset_clicked();
+    callback quick_speed(float);
+
+    // Header
+    Rectangle {
+        x: 0;
+        y: 0;
+        width: parent.width;
+        height: 76px;
+        background: #101a2b;
+        border-color: #1e293b;
+        border-width: 0px;
+        Rectangle {
+            x: 0;
+            y: 74px;
+            width: parent.width;
+            height: 2px;
+            background: #26364d;
+        }
+
+        Rectangle {
+            x: 22px;
+            y: 16px;
+            width: 44px;
+            height: 44px;
+            background: #4f46e5;
+            border-radius: 12px;
+            Text {
+                text: "ϟ";
+                color: white;
+                font-size: 30px;
+                font-weight: 800;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+
+        Text {
+            x: 80px;
+            y: 13px;
+            text: "Εργαστήριο Κυκλωμάτων RC, RL & RLC";
+            color: #e2e8f0;
+            font-size: 23px;
+            font-weight: 800;
+        }
+
+        Text {
+            x: 81px;
+            y: 44px;
+            text: "Διαδραστικό εργαστήριο Ηλεκτροτεχνίας ΕΠΑΛ · Rust + Slint";
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        ActionButton {
+            x: parent.width - 220px;
+            y: 19px;
+            width: 100px;
+            label: root.play_text;
+            primary: true;
+            pressed => { root.play_clicked(); }
+        }
+
+        ActionButton {
+            x: parent.width - 108px;
+            y: 19px;
+            width: 88px;
+            label: "Επαναφορά";
+            pressed => { root.reset_clicked(); }
+        }
+    }
+
+    // Left: parameters
+    Rectangle {
+        x: 20px;
+        y: 94px;
+        width: 320px;
+        height: 882px;
+        background: #111c2e;
+        border-color: #26364d;
+        border-width: 1px;
+        border-radius: 16px;
+        Text {
+            x: 18px;
+            y: 16px;
+            text: "ΠΑΡΑΜΕΤΡΟΙ ΚΥΚΛΩΜΑΤΟΣ";
+            color: #e2e8f0;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        Rectangle {
+            x: 18px;
+            y: 44px;
+            width: 284px;
+            height: 1px;
+            background: #26364d;
+        }
+
+        Text {
+            x: 18px;
+            y: 58px;
+            text: "Επιλογή κυκλώματος";
+            color: #94a3b8;
+            font-size: 11px;
+        }
+
+        ModeButton {
+            x: 18px;
+            y: 82px;
+            label: "RC";
+            mode: 0;
+            active-mode: root.circuit_mode;
+            pressed(m) => { root.mode_selected(m); }
+        }
+
+        ModeButton {
+            x: 114px;
+            y: 82px;
+            label: "RL";
+            mode: 1;
+            active-mode: root.circuit_mode;
+            pressed(m) => { root.mode_selected(m); }
+        }
+
+        ModeButton {
+            x: 210px;
+            y: 82px;
+            label: "RLC";
+            mode: 2;
+            active-mode: root.circuit_mode;
+            pressed(m) => { root.mode_selected(m); }
+        }
+
+        Text {
+            x: 18px;
+            y: 130px;
+            width: 284px;
+            text: "Μετακίνησε τους ρυθμιστές για να αλλάξεις τις ηλεκτρικές παραμέτρους.";
+            color: #64748b;
+            font-size: 10px;
+            wrap: word-wrap;
+        }
+
+        VerticalLayout {
+            x: 18px;
+            y: 174px;
+            width: 284px;
+            height: root.circuit_mode == 1 ? 400px : 404px;
+            spacing: root.circuit_mode == 1 ? 32px : 6px;
+            ParameterControl {
+                width: 284px;
+                label: "Αυτεπαγωγή L";
+                value-text: root.l_text;
+                minimum: 0;
+                maximum: 300;
+                value <=> root.l_value;
+                accent: #fbbf24;
+                changed(v) => { root.l_changed(v); }
+            }
+
+            if root.circuit_mode != 1: ParameterControl {
+                width: 284px;
+                label: "Χωρητικότητα C";
+                value-text: root.c_text;
+                minimum: 10;
+                maximum: 1000;
+                value <=> root.c_value;
+                accent: #c4b5fd;
+                changed(v) => { root.c_changed(v); }
+            }
+            ParameterControl {
+                width: 284px;
+                label: "Ωμική αντίσταση R";
+                value-text: root.r_text;
+                minimum: 5;
+                maximum: 150;
+                value <=> root.r_value;
+                accent: #34d399;
+                changed(v) => { root.r_changed(v); }
+            }
+
+            ParameterControl {
+                width: 284px;
+                label: "Συχνότητα f";
+                value-text: root.frequency_text;
+                minimum: 10;
+                maximum: 150;
+                value <=> root.frequency_value;
+                accent: #22d3ee;
+                changed(v) => { root.frequency_changed(v); }
+            }
+
+            ParameterControl {
+                width: 284px;
+                label: "Τάση πηγής Vrms";
+                value-text: root.voltage_text;
+                minimum: 50;
+                maximum: 400;
+                value <=> root.voltage_value;
+                accent: #38bdf8;
+                changed(v) => { root.voltage_changed(v); }
+            }
+        }
+
+        Rectangle {
+            x: 18px;
+            y: 592px;
+            width: 284px;
+            height: 1px;
+            background: #26364d;
+        }
+
+        Text {
+            x: 18px;
+            y: 608px;
+            text: "ΤΑΧΥΤΗΤΑ ΠΡΟΣΟΜΟΙΩΣΗΣ";
+            color: #e2e8f0;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        Text {
+            x: 230px;
+            y: 608px;
+            width: 70px;
+            text: root.speed_text;
+            color: #e879f9;
+            font-size: 12px;
+            font-weight: 800;
+            horizontal-alignment: right;
+        }
+
+        Slider {
+            x: 18px;
+            y: 636px;
+            width: 284px;
+            height: 28px;
+            minimum: 0.02;
+            maximum: 1.0;
+            value <=> root.speed_value;
+            changed(v) => { root.speed_changed(v); }
+        }
+
+        Text {
+            x: 18px;
+            y: 674px;
+            text: "Γρήγορη επιλογή";
+            color: #94a3b8;
+            font-size: 10px;
+        }
+
+        ActionButton {
+            x: 18px;
+            y: 697px;
+            width: 64px;
+            height: 32px;
+            label: "0.05x";
+            primary: abs(root.speed_value - 0.05) < 0.001;
+            pressed => { root.quick_speed(0.05); }
+        }
+
+        ActionButton {
+            x: 91px;
+            y: 697px;
+            width: 64px;
+            height: 32px;
+            label: "0.10x";
+            primary: abs(root.speed_value - 0.10) < 0.001;
+            pressed => { root.quick_speed(0.10); }
+        }
+
+        ActionButton {
+            x: 164px;
+            y: 697px;
+            width: 64px;
+            height: 32px;
+            label: "0.20x";
+            primary: abs(root.speed_value - 0.20) < 0.001;
+            pressed => { root.quick_speed(0.20); }
+        }
+
+        ActionButton {
+            x: 237px;
+            y: 697px;
+            width: 64px;
+            height: 32px;
+            label: "0.50x";
+            primary: abs(root.speed_value - 0.50) < 0.001;
+            pressed => { root.quick_speed(0.50); }
+        }
+
+        Rectangle {
+            x: 18px;
+            y: 754px;
+            width: 284px;
+            height: 105px;
+            background: #0b1525;
+            border-color: #26364d;
+            border-width: 1px;
+            border-radius: 10px;
+            Text {
+                x: 12px;
+                y: 12px;
+                text: "ΕΚΠΑΙΔΕΥΤΙΚΟΣ ΣΤΟΧΟΣ";
+                color: #818cf8;
+                font-size: 10px;
+                font-weight: 800;
+            }
+
+            Text {
+                x: 12px;
+                y: 34px;
+                width: 258px;
+                text: "Παρατήρησε πώς η χωρητική και η επαγωγική αντίδραση επηρεάζουν τη σύνθετη αντίσταση, το ρεύμα και τη γωνία φάσης.";
+                color: #94a3b8;
+                font-size: 10px;
+                wrap: word-wrap;
+            }
+        }
+    }
+
+    // Main visual area: circuit, phase diagram, triangles
+    Rectangle {
+        x: 360px;
+        y: 94px;
+        width: parent.width - 380px;
+        height: 340px;
+        background: transparent;
+        // Circuit schematic card
+        Rectangle {
+            x: 0;
+            y: 0;
+            width: 335px;
+            height: 340px;
+            background: #111c2e;
+            border-color: #26364d;
+            border-width: 1px;
+            border-radius: 16px;
+            Text {
+                x: 18px;
+                y: 16px;
+                text: "ΚΥΚΛΩΜΑ ΣΕΙΡΑΣ";
+                color: #e2e8f0;
+                font-size: 13px;
+                font-weight: 800;
+            }
+
+            Text {
+                x: 18px;
+                y: 42px;
+                text: root.mode_title;
+                color: #818cf8;
+                font-size: 14px;
+                font-weight: 700;
+            }
+
+            Text {
+                x: 18px;
+                y: 65px;
+                width: 300px;
+                text: root.mode_hint;
+                color: #94a3b8;
+                font-size: 10px;
+                wrap: word-wrap;
+            }
+            // Series loop with the AC source centered on the bottom branch.
+            Rectangle {
+                x: 35px;
+                y: 160px;
+                width: 265px;
+                height: 2px;
+                background: #64748b;
+            }
+
+            Rectangle {
+                x: 35px;
+                y: 160px;
+                width: 2px;
+                height: 102px;
+                background: #64748b;
+            }
+
+            Rectangle {
+                x: 35px;
+                y: 260px;
+                width: 265px;
+                height: 2px;
+                background: #64748b;
+            }
+
+            Rectangle {
+                x: 300px;
+                y: 160px;
+                width: 2px;
+                height: 102px;
+                background: #64748b;
+            }
+
+            Rectangle {
+                x: 149px;
+                y: 242px;
+                width: 37px;
+                height: 37px;
+                border-radius: 19px;
+                border-width: 2px;
+                border-color: #38bdf8;
+                background: #10233a;
+                Text {
+                    text: "~";
+                    color: #38bdf8;
+                    font-size: 22px;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+
+            Text {
+                x: 17px;
+                y: 286px;
+                width: 300px;
+                text: root.voltage_text + " · " + root.frequency_text;
+                color: #38bdf8;
+                font-size: 11px;
+                font-weight: 700;
+                horizontal-alignment: center;
+            }
+
+            CircuitPart {
+                x: root.circuit_mode == 2 ? 60px : 82px;
+                y: 123px;
+                width: root.circuit_mode == 2 ? 54px : 62px;
+                label: "R";
+                value-text: root.r_text;
+                accent: #34d399;
+            }
+
+            CircuitPart {
+                x: root.circuit_mode == 2 ? 141px : 203px;
+                y: 123px;
+                width: root.circuit_mode == 2 ? 54px : 62px;
+                label: "L";
+                value-text: root.l_text;
+                accent: #fbbf24;
+                visible: root.circuit_mode != 0;
+            }
+
+            CircuitPart {
+                x: root.circuit_mode == 2 ? 222px : 203px;
+                y: 123px;
+                width: root.circuit_mode == 2 ? 54px : 62px;
+                label: "C";
+                value-text: root.c_text;
+                accent: #c4b5fd;
+                visible: root.circuit_mode != 1;
+            }
+
+            Text {
+                x: 18px;
+                y: 316px;
+                width: 300px;
+                text: "Σειριακή σύνδεση · κοινό ρεύμα σε όλα τα στοιχεία";
+                color: #64748b;
+                font-size: 10px;
+                horizontal-alignment: center;
+            }
+        }
+
+        // Phase diagram card
+        Rectangle {
+            x: 350px;
+            y: 0;
+            width: 350px;
+            height: 340px;
+            background: #111c2e;
+            border-color: #26364d;
+            border-width: 1px;
+            border-radius: 16px;
+            Text {
+                x: 18px;
+                y: 16px;
+                text: "ΦΑΣΙΚΟ ΔΙΑΓΡΑΜΜΑ";
+                color: #e2e8f0;
+                font-size: 13px;
+                font-weight: 800;
+            }
+
+            Text {
+                x: 18px;
+                y: 42px;
+                width: 314px;
+                text: root.phase_legend;
+                color: #fbbf24;
+                font-size: 11px;
+                font-weight: 700;
+                horizontal-alignment: center;
+            }
+            // Axes
+            Rectangle {
+                x: 34px;
+                y: 154px;
+                width: 282px;
+                height: 1px;
+                background: #334155;
+            }
+
+            Rectangle {
+                x: 175px;
+                y: 75px;
+                width: 1px;
+                height: 170px;
+                background: #334155;
+            }
+            // Voltage (blue) and current (red) vectors; the yellow badge sits inside their angle.
+            Rectangle {
+                x: 175px;
+                y: 153px;
+                width: 128px;
+                height: 3px;
+                background: #38bdf8;
+                transform-origin: { x: 0px, y: 1.5px };
+                transform-rotation: root.voltage_vector_angle * 1deg;
+            }
+
+            Rectangle {
+                x: 175px;
+                y: 153px;
+                width: 106px;
+                height: 3px;
+                background: #fb7185;
+                transform-origin: { x: 0px, y: 1.5px };
+                transform-rotation: root.current_vector_angle * 1deg;
+            }
+
+            Rectangle {
+                x: root.voltage_tip_x * 1px - 4.5px;
+                y: root.voltage_tip_y * 1px - 4.5px;
+                width: 9px;
+                height: 9px;
+                background: #38bdf8;
+                border-radius: 5px;
+            }
+
+            Rectangle {
+                x: root.current_tip_x * 1px - 4.5px;
+                y: root.current_tip_y * 1px - 4.5px;
+                width: 9px;
+                height: 9px;
+                background: #fb7185;
+                border-radius: 5px;
+            }
+
+            Rectangle {
+                x: root.angle_bubble_x * 1px - 13px;
+                y: root.angle_bubble_y * 1px - 13px;
+                width: 26px;
+                height: 26px;
+                background: #fbbf24;
+                border-radius: 13px;
+                border-width: 1px;
+                border-color: #fde68a;
+                Text {
+                    text: root.angle_badge;
+                    color: #422006;
+                    font-size: 9px;
+                    font-weight: 900;
+                    horizontal-alignment: center;
+                    vertical-alignment: center;
+                }
+            }
+
+            Rectangle {
+                x: 18px;
+                y: 274px;
+                width: 14px;
+                height: 3px;
+                background: #38bdf8;
+            }
+
+            Text {
+                x: 38px;
+                y: 267px;
+                text: "Τάση V";
+                color: #7dd3fc;
+                font-size: 10px;
+            }
+
+            Rectangle {
+                x: 122px;
+                y: 274px;
+                width: 14px;
+                height: 3px;
+                background: #fb7185;
+            }
+
+            Text {
+                x: 142px;
+                y: 267px;
+                text: "Ρεύμα I";
+                color: #fda4af;
+                font-size: 10px;
+            }
+
+            Text {
+                x: 18px;
+                y: 292px;
+                width: 314px;
+                text: root.mode_hint;
+                color: #94a3b8;
+                font-size: 10px;
+                horizontal-alignment: center;
+                wrap: word-wrap;
+            }
+
+            Text {
+                x: 18px;
+                y: 324px;
+                width: 314px;
+                text: "Η κίτρινη ένδειξη βρίσκεται μέσα στη γωνία φάσης.";
+                color: #64748b;
+                font-size: 9px;
+                horizontal-alignment: center;
+            }
+        }
+
+        // Voltage and impedance triangles
+        Rectangle {
+            x: 715px;
+            y: 0;
+            width: parent.width - 715px;
+            height: 340px;
+            background: #111c2e;
+            border-color: #26364d;
+            border-width: 1px;
+            border-radius: 16px;
+            Text {
+                x: 16px;
+                y: 16px;
+                text: "ΤΡΙΓΩΝΑ ΜΕΓΕΘΩΝ";
+                color: #e2e8f0;
+                font-size: 13px;
+                font-weight: 800;
+            }
+
+            TriangleCard {
+                x: 12px;
+                y: 58px;
+                title: "Τρίγωνο Τάσεων";
+                base-text: root.voltage_triangle_base;
+                side-text: root.voltage_triangle_side;
+                hyp-text: root.voltage_triangle_hyp;
+                base-len: root.triangle_base;
+                height-len: root.triangle_height;
+                sign: root.triangle_sign;
+                diag-angle: root.triangle_angle;
+            }
+
+            TriangleCard {
+                x: 204px;
+                y: 58px;
+                title: "Τρίγωνο Αντιστάσεων";
+                base-text: root.impedance_triangle_base;
+                side-text: root.impedance_triangle_side;
+                hyp-text: root.impedance_triangle_hyp;
+                base-len: root.triangle_base;
+                height-len: root.triangle_height;
+                sign: root.triangle_sign;
+                diag-angle: root.triangle_angle;
+            }
+
+            Text {
+                x: 16px;
+                y: 322px;
+                width: parent.width - 32px;
+                text: "Η φορά της κάθετης πλευράς δείχνει χωρητική (−) ή επαγωγική (+) συμπεριφορά.";
+                color: #64748b;
+                font-size: 9px;
+                horizontal-alignment: center;
+            }
+        }
+    }
+
+    // Oscilloscope
+    Rectangle {
+        x: 360px;
+        y: 452px;
+        width: parent.width - 380px;
+        height: 204px;
+        background: #111c2e;
+        border-color: #26364d;
+        border-width: 1px;
+        border-radius: 16px;
+        Text {
+            x: 18px;
+            y: 14px;
+            text: "ΠΑΛΜΟΓΡΑΦΟΣ · v(t) & i(t)";
+            color: #e2e8f0;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        Text {
+            x: parent.width - 350px;
+            y: 14px;
+            width: 332px;
+            text: root.scope_time_base;
+            color: #64748b;
+            font-size: 10px;
+            horizontal-alignment: right;
+        }
+        // 10 horizontal divisions over a real 50 ms window.
+        for div in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]: Rectangle {
+            x: 52px + (div * 99) * 1px;
+            y: 50px;
+            width: 1px;
+            height: 112px;
+            background: #1b2a3e;
+        }
+        // Shared grid and baseline for both channels.
+        Rectangle {
+            x: 52px;
+            y: 58px;
+            width: 990px;
+            height: 1px;
+            background: #1b2a3e;
+        }
+
+        Rectangle {
+            x: 52px;
+            y: 80px;
+            width: 990px;
+            height: 1px;
+            background: #1b2a3e;
+        }
+
+        Rectangle {
+            x: 52px;
+            y: 102px;
+            width: 990px;
+            height: 1px;
+            background: #26364d;
+        }
+
+        Rectangle {
+            x: 52px;
+            y: 124px;
+            width: 990px;
+            height: 1px;
+            background: #1b2a3e;
+        }
+
+        Rectangle {
+            x: 52px;
+            y: 146px;
+            width: 990px;
+            height: 1px;
+            background: #1b2a3e;
+        }
+
+        Text {
+            x: 18px;
+            y: 31px;
+            text: "V";
+            color: #38bdf8;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        Text {
+            x: 42px;
+            y: 31px;
+            width: parent.width / 2 - 60px;
+            text: root.scope_voltage_scale;
+            color: #7dd3fc;
+            font-size: 10px;
+        }
+
+        Text {
+            x: parent.width / 2 + 10px;
+            y: 31px;
+            text: "I";
+            color: #fb7185;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        Text {
+            x: parent.width / 2 + 34px;
+            y: 31px;
+            width: parent.width / 2 - 52px;
+            text: root.scope_current_scale;
+            color: #fda4af;
+            font-size: 10px;
+        }
+
+        for segment in root.voltage_wave: Rectangle {
+            x: segment.x * 1px;
+            y: segment.y * 1px;
+            width: segment.length * 1px;
+            height: 2px;
+            background: #22d3ee;
+            transform-origin: { x: 0px, y: 1px };
+            transform-rotation: segment.rotation * 1deg;
+        }
+        for segment in root.current_wave: Rectangle {
+            x: segment.x * 1px;
+            y: segment.y * 1px;
+            width: segment.length * 1px;
+            height: 2px;
+            background: #fb7185;
+            transform-origin: { x: 0px, y: 1px };
+            transform-rotation: segment.rotation * 1deg;
+        }
+        Rectangle {
+            x: 18px;
+            y: 167px;
+            width: parent.width - 36px;
+            height: 1px;
+            background: #26364d;
+        }
+
+        Text {
+            x: 18px;
+            y: 178px;
+            width: parent.width - 36px;
+            text: "Κοινή γραμμή βάσης και άξονας χρόνου· κάθε κανάλι έχει τη δική του κατακόρυφη κλίμακα, ώστε να φαίνονται άμεσα οι διαφορές φάσης και πλάτους.";
+            color: #94a3b8;
+            font-size: 10px;
+            wrap: word-wrap;
+        }
+    }
+
+    // Calculations and measurements
+    Rectangle {
+        x: 360px;
+        y: 696px;
+        width: parent.width - 380px;
+        height: 280px;
+        background: #111c2e;
+        border-color: #26364d;
+        border-width: 1px;
+        border-radius: 16px;
+        Text {
+            x: 18px;
+            y: 14px;
+            text: "ΥΠΟΛΟΓΙΣΜΟΙ & ΜΕΤΡΗΣΕΙΣ";
+            color: #e2e8f0;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        VerticalLayout {
+            x: 18px;
+            y: 44px;
+            width: parent.width - 36px;
+            height: 130px;
+            spacing: 10px;
+            HorizontalLayout {
+                spacing: 10px;
+                if root.circuit_mode != 0: CalcCard {
+                    title: "Επαγωγική αντίδραση";
+                    value: root.calc_xl;
+                    accent: #fbbf24;
+                }
+                if root.circuit_mode != 1: CalcCard {
+                    title: "Χωρητική αντίδραση";
+                    value: root.calc_xc;
+                    accent: #c4b5fd;
+                }
+                CalcCard {
+                    title: "Σύνθετη αντίσταση";
+                    value: root.calc_z;
+                    accent: #c4b5fd;
+                }
+
+                CalcCard {
+                    title: "Ενεργός ένταση";
+                    value: root.calc_i;
+                    accent: #fb7185;
+                }
+
+                CalcCard {
+                    title: "Γωνία φάσης";
+                    value: root.calc_phi + " · " + root.calc_phi_state;
+                    accent: #fbbf24;
+                    value-size: 12px;
+                }
+            }
+
+            HorizontalLayout {
+                spacing: 10px;
+                CalcCard {
+                    title: "Χρονική διαφορά";
+                    value: root.calc_dt;
+                    accent: #a5b4fc;
+                }
+
+                if root.circuit_mode == 2: CalcCard {
+                    title: "Συχνότητα συντονισμού";
+                    value: root.calc_resonance;
+                    accent: #c4b5fd;
+                }
+                CalcCard {
+                    title: "Τάση στην αντίσταση";
+                    value: root.calc_vr;
+                    accent: #34d399;
+                }
+
+                CalcCard {
+                    title: "Άεργα συνιστώσα τάσης";
+                    value: root.calc_vx;
+                    accent: #fbbf24;
+                    value-size: 12px;
+                }
+
+                CalcCard {
+                    title: "Τάση πηγής";
+                    value: root.calc_v;
+                    accent: #38bdf8;
+                }
+            }
+        }
+
+        Rectangle {
+            x: 18px;
+            y: 180px;
+            width: parent.width - 36px;
+            height: 1px;
+            background: #26364d;
+        }
+
+        Text {
+            x: 18px;
+            y: 186px;
+            width: parent.width - 36px;
+            text: root.conclusion_title;
+            color: #818cf8;
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        HorizontalLayout {
+            x: 18px;
+            y: 200px;
+            width: parent.width - 36px;
+            height: 74px;
+            spacing: 10px;
+            ConclusionCard {
+                index-text: "1";
+                title: root.conclusion_1_title;
+                text: root.conclusion_1;
+                formula: root.conclusion_1_formula;
+                accent: #38bdf8;
+            }
+
+            ConclusionCard {
+                index-text: "2";
+                title: root.conclusion_2_title;
+                text: root.conclusion_2;
+                formula: root.conclusion_2_formula;
+                accent: #fbbf24;
+            }
+
+            ConclusionCard {
+                index-text: "3";
+                title: root.conclusion_3_title;
+                text: root.conclusion_3;
+                formula: root.conclusion_3_formula;
+                accent: #fb7185;
+            }
+        }
+    }
+}

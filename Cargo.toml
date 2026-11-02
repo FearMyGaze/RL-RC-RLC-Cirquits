@@ -1,0 +1,13 @@
+[package]
+name = "RL, RC and RLC circuit demonstration"
+version = "0.1.0"
+edition = "2021"
+description = "Interactive RC, RL and RLC educational circuit laboratory built with Rust and Slint"
+license = "MIT"
+build = "build.rs"
+
+[dependencies]
+slint = "1.18.1"
+
+[build-dependencies]
+slint-build = "1.18.1"
